@@ -1,65 +1,90 @@
-# Project Title
+# TipEase API
 
-Simple overview of use/purpose.
+The TipEase api is the backend for TipEase web app.
 
-## Description
+## Table of Contents
 
-An in-depth paragraph about your project and overview of use.
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [NPM Commands](#npm-commands)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Getting Started
+## Features
 
-### Dependencies
+- Create raffle draws
+- Create teams
+- Invite members to your team
+- Track sales and contestants 💵
+- Issue tickets on payment 🎫
+- Select winning tickets
+- Get paid directly into your bank account.
 
-- Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-- ex. Windows 10
+## Prerequisites
 
-### Installing
+Before running this project, ensure you have the following prerequisites:
 
-- How/where to download your program
-- Any modifications needed to be made to files/folders
+- NodeJS v16+
+- Postgres
+- A [Clerk](https://clerk.com/) account
 
-### Executing program
+## Installation
 
-- How to run the program
-- Step-by-step bullets
+1. Clone the repository:
 
-```
-code blocks for commands
-```
+   ```bash
+   git clone https://github.com/Ayo-Awe/raffle_draw_api.git
+   ```
 
-## Help
+2. Install the dependencies:
 
-Any advise for common problems or issues.
+   ```bash
+   cd raffle_draw_api
+   npm install
+   ```
 
-```
-command to run if program contains helper info
-```
+3. Configure the environment variables:
 
-## Authors
+   - Rename the `.env.example` file to `.env`.
+   - Modify the `.env` file and update the necessary variables.
 
-Contributors names and contact info
+4. Start the server:
 
-ex. Dominique Pizzie
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+   ```bash
+   npm start
+   ```
 
-## Version History
+## Usage
 
-- 0.2
-  - Various bug fixes and optimizations
-  - See [commit change]() or See [release history]()
-- 0.1
-  - Initial Release
+## API Documentation
+
+The API documentation is available [here](https://documenter.getpostman.com/view/28334766/2s946fcsLb)
+
+## Testing
+
+😁 Coming soon!!!
+
+## NPM Commands
+
+- `npm start`: Starts the server.
+- `npm test`: Runs the tests. (WIP)
+- `npm run lint`: Performs linting checks. (WIP)
+- `npm run db:migrate`: Runs database migrations.
+- `npm run db:generate`: Generates database migrations
+- `npm run dev`: Starts the server in development mode with automatic reloading.
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch: `git checkout -b feature/your-feature`.
+3. Make your changes and commit them: `git commit -m 'Add some feature'`.
+4. Push the changes to your branch: `git push origin feature/your-feature`.
+5. Submit a pull request.
 
 ## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-Inspiration, code snippets, etc.
-
-- [awesome-readme](https://github.com/matiassingers/awesome-readme)
-- [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-- [dbader](https://github.com/dbader/readme-template)
-- [zenorocha](https://gist.github.com/zenorocha/4526327)
-- [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
