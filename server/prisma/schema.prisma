@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  firstName String @map("first_name")
+  lastName String @map("last_name")
+  email String @unique
+  subaccount String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  page Page?
+  donations Donation[]
+
+  @@map("users")
+}
+
+model Page {
+  id Int @id @default(autoincrement())
+  slug String @db.VarChar(100)
+  isActive Boolean @default(false) @map("is_active")
+  pricePerToken Int @map("price_per_token")
+  profileImage String @map("profile_image")
+  bannerImage String? @map("banner_image")
+  qrImage String? @map("qr_image")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id])
+  userId Int @unique @map("user_id")
+  tipCurrencyId Int @map("tip_currency_id")
+  tipCurrency Currency @relation(fields: [tipCurrencyId], references: [id])
+
+  @@map("pages")
+}
+
+model Currency {
+  id Int @id @default(autoincrement())
+  name String @unique
+  pages Page[]
+
+  @@map("currencies")
+}
+
+model Donation {
+  id Int @id @default(autoincrement())
+  message String @db.Text @default("")
+  email String @db.VarChar(255)
+  reference String
+  createdAt DateTime @default(now()) @map("created_at")
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+
+@@map("donations")
+}
