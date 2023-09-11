@@ -1,6 +1,7 @@
 import { HttpErrorCode } from "../errors/httpErrors";
 import { envSchema } from "../env";
 import { z } from "zod";
+import type { User } from "@prisma/client";
 
 declare global {
   namespace Express {
@@ -15,7 +16,7 @@ declare global {
       ): Response;
     }
     export interface Request {
-      user?: { id: number; email: string };
+      user?: User;
     }
   }
   namespace NodeJS {

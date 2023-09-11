@@ -1,7 +1,14 @@
+import { User } from "@prisma/client";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 
 type ConditionalCallback = (req: Request) => boolean;
 
+/**
+ * Applies a middleware only if the callback returns true
+ * @param middleware
+ * @param callback
+ * @returns
+ */
 export function conditionalMiddleware(
   middleware: RequestHandler,
   callback: ConditionalCallback

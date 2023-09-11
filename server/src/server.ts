@@ -8,8 +8,8 @@ import { startWorkers } from "./workers";
 process.on("uncaughtException", () => {});
 process.on("unhandledRejection", () => {});
 
-const port = process.env.PORT || "8080";
-app.listen(port, async () => {
+const port = process.env.PORT || 8080;
+app.listen(Number(port), async () => {
   console.log(`Listening for requests on port ${port} ...`);
   await redisClient.connect();
   console.log("Successfully connected to redis");

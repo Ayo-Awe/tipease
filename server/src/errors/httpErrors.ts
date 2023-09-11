@@ -12,6 +12,7 @@ export type BadRequestErrorCode =
 export type UnauthorizedErrorCode =
   | "EXPIRED_TOKEN"
   | "MISSING_AUTH_HEADER"
+  | "MISSING_AUTH_TOKEN"
   | "MALFORMED_TOKEN"
   | "INVALID_TOKEN";
 

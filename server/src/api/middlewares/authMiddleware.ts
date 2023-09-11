@@ -1,35 +1,44 @@
 import { NextFunction, Request, Response } from "express";
 import { Unauthorized } from "../../errors/httpErrors";
-import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import * as dotenv from "dotenv";
-import db from "../../db";
-import { users } from "../../db/schema";
-import { eq } from "drizzle-orm";
-dotenv.config();
+import jwt, {
+  JsonWebTokenError,
+  JwtPayload,
+  TokenExpiredError,
+} from "jsonwebtoken";
+import client from "../../db";
 
 export async function auth(req: Request, res: Response, next: NextFunction) {
   try {
+    // Authenticate via bearer token or cookies
     const authHeader = req.headers.authorization;
+    const sessionToken = req.cookies["__session"];
 
-    if (!authHeader) {
-      return next(
-        new Unauthorized("Missing Auth header", "MISSING_AUTH_HEADER")
-      );
+    if (!authHeader && !sessionToken) {
+      return next(new Unauthorized("Missing auth token", "MISSING_AUTH_TOKEN"));
     }
 
-    const token = authHeader.split(" ")[1];
+    let payload: JwtPayload | undefined;
 
-    if (!token) {
-      return next(new Unauthorized("Malformed token", "MALFORMED_TOKEN"));
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+
+      if (!token) {
+        return next(new Unauthorized("Missing Auth header", "MALFORMED_TOKEN"));
+      }
+
+      payload = jwt.verify(
+        token,
+        process.env.CLERK_PEM_PUBLIC_KEY
+      ) as JwtPayload;
+    } else {
+      payload = jwt.verify(
+        sessionToken,
+        process.env.CLERK_PEM_PUBLIC_KEY
+      ) as JwtPayload;
     }
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET) as {
-      uid: number;
-    };
-
-    const user = await db.query.users.findFirst({
-      columns: { id: true, email: true },
-      where: eq(users.id, payload.uid),
+    const user = await client.user.findFirst({
+      where: { clerkId: payload.sub }, // sub is user's clerk id
     });
 
     if (!user) {
