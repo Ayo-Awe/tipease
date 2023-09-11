@@ -3,7 +3,14 @@ import { ZodError, z } from "zod";
 export const envSchema = z.object({
   PORT: z.string().optional(),
   DATABASE_URL: z.string(),
-  // JWT_SECRET: z.string(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.string(),
+  // CLERK_SECRET_KEY: z.string(),
+  // CLERK_PEM_PUBLIC_KEY: z.string(),
+  // PAYSTACK_SECRET: z.string(),
+  MAILGUN_API_KEY: z.string(),
+  MAILGUN_DOMAIN: z.string(),
+  MAILGUN_SENDER_EMAIL: z.string().email(),
 });
 
 try {
