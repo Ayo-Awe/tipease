@@ -18,6 +18,10 @@ export const emailWorker = new Worker("email", jobHandler, {
   },
 });
 
+emailWorker.on("ready", () => {
+  console.log("Email worker started successfully");
+});
+
 async function jobHandler(job: Job<EmailJobData>) {
   const messageData = {
     from: job.data.from || process.env.MAILGUN_SENDER_EMAIL,

@@ -30,7 +30,7 @@ model Page {
   slug String @db.VarChar(100)
   isActive Boolean @default(false) @map("is_active")
   pricePerToken Int @map("price_per_token")
-  profileImage String @map("profile_image")
+  profileImage String? @map("profile_image")
   bannerImage String? @map("banner_image")
   qrImage String? @map("qr_image")
   createdAt DateTime @default(now()) @map("created_at")
@@ -45,7 +45,10 @@ model Page {
 
 model Currency {
   id Int @id @default(autoincrement())
-  name String @unique
+  name String
+  code String @unique @db.Char(3)
+  minimumTipAmount Int @map("minimum_tip_amount")
+
   pages Page[]
 
   @@map("currencies")

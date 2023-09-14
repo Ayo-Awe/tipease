@@ -1,6 +1,7 @@
 import { emailWorker } from "./email.worker";
+import { profileImageWorker } from "./profileImage.worker";
 
 export async function startWorkers() {
   emailWorker.run();
-  console.log("Successfully started workers");
+  profileImageWorker.run();
 }

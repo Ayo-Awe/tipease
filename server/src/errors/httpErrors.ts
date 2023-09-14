@@ -19,6 +19,7 @@ export type UnauthorizedErrorCode =
 export type ForbiddenErrorCode =
   | "ACCESS_DENIED"
   | "INSUFFICIENT_PERMISSIONS"
+  | "PAGE_NOT_ACTIVATED"
   | "USER_NOT_VERIFIED";
 
 export type ServerErrorCode =
@@ -29,7 +30,10 @@ export type ServerErrorCode =
 export type ConflictErrorCode =
   | "EXISTING_USER_EMAIL"
   | "REEL_CONFIRMATION_OVERDUE"
-  | "REEL_ALREADY_CONFIRMED";
+  | "REEL_ALREADY_CONFIRMED"
+  | "EXISTING_USER_PAGE";
+
+export type UnprocessableErrorCode = "UNPROCESSABLE";
 
 export type HttpErrorCode =
   | ResourceNotFoundErrorCode
@@ -37,7 +41,8 @@ export type HttpErrorCode =
   | UnauthorizedErrorCode
   | ForbiddenErrorCode
   | ServerErrorCode
-  | ConflictErrorCode;
+  | ConflictErrorCode
+  | UnprocessableErrorCode;
 
 export abstract class HttpError extends Error {
   errorCode: HttpErrorCode;
@@ -66,6 +71,11 @@ export class ResourceNotFound extends HttpError {
 export class Unauthorized extends HttpError {
   constructor(message: string, errorCode: UnauthorizedErrorCode) {
     super(401, message, errorCode);
+  }
+}
+export class Unprocessable extends HttpError {
+  constructor(message: string, errorCode: UnprocessableErrorCode) {
+    super(422, message, errorCode);
   }
 }
 

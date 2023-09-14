@@ -7,11 +7,23 @@ import responseUtilities from "./api/middlewares/responseUtilities";
 import v1Router from "./api/v1/routes";
 import { conditionalMiddleware } from "./utils/expressHelpers";
 import cookieParser from "cookie-parser";
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { ExpressAdapter } from "@bull-board/express";
+import emailQueue from "./queues/email.queue";
+import profileImageQueue from "./queues/profileImage.queue";
 
 const app = express();
 const whitelist = ["http://localhost:3000"];
 
 // Middlewares
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath("/admin/queues");
+
+createBullBoard({
+  queues: [new BullMQAdapter(emailQueue), new BullMQAdapter(profileImageQueue)],
+  serverAdapter: serverAdapter,
+});
 app.use(responseUtilities);
 app.use(
   // Clerk webhook verification won't work with express.json().
@@ -24,6 +36,7 @@ app.use(
 app.use(cookieParser());
 app.use(cors({ origin: whitelist }));
 app.use(morgan("dev"));
+app.use("/admin/queues", serverAdapter.getRouter());
 
 // API routes
 app.use("/api/v1", v1Router);
