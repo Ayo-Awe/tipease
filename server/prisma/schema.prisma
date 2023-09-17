@@ -19,6 +19,7 @@ model User {
   subaccount String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  activatedAt DateTime? @map("activated_at")
   page Page?
   donations Donation[]
 

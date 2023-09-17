@@ -19,19 +19,14 @@ export type UnauthorizedErrorCode =
 export type ForbiddenErrorCode =
   | "ACCESS_DENIED"
   | "INSUFFICIENT_PERMISSIONS"
-  | "PAGE_NOT_ACTIVATED"
-  | "USER_NOT_VERIFIED";
+  | "ACCOUNT_NOT_ACTIVATED";
 
 export type ServerErrorCode =
   | "UNEXPECTED_ERROR"
   | "DATABASE_ERROR"
   | "THIRD_PARTY_API_FAILURE";
 
-export type ConflictErrorCode =
-  | "EXISTING_USER_EMAIL"
-  | "REEL_CONFIRMATION_OVERDUE"
-  | "REEL_ALREADY_CONFIRMED"
-  | "EXISTING_USER_PAGE";
+export type ConflictErrorCode = "EXISTING_USER_EMAIL" | "EXISTING_USER_PAGE";
 
 export type UnprocessableErrorCode = "UNPROCESSABLE";
 

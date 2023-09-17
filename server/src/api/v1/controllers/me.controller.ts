@@ -124,7 +124,7 @@ class MeController {
     const page = await client.page.create({ data: { ...data, userId: id } });
     await profileImageQueue.add("profile upload", {
       profileImage: req.files.profile[0],
-      bannerImage: req.files.banner[0],
+      bannerImage: req.files.banner?.at(0),
       pageId: page.id,
     });
 
@@ -139,6 +139,13 @@ class MeController {
       throw new BadRequest(error.message, error.code);
     }
 
+    if (!req.user!.activatedAt) {
+      throw new Forbidden(
+        "Cannot edit page status until user account is activated.",
+        "ACCOUNT_NOT_ACTIVATED"
+      );
+    }
+
     const page = await client.page.findFirst({
       where: { userId: id },
       include: {
@@ -148,11 +155,6 @@ class MeController {
 
     if (!page) {
       throw new ResourceNotFound("User has no page", "RESOURCE_NOT_FOUND");
-    }
-
-    // Check if user has connected a withdrawal account
-    if (!page.user.subaccount) {
-      throw new Forbidden("Page not activated", "PAGE_NOT_ACTIVATED");
     }
 
     let updatedPage;
@@ -179,7 +181,7 @@ class MeController {
       throw new BadRequest(error.message, error.code);
     }
 
-    // Check if slug is available
+    // Check for conflicting slugs
     if (data.slug) {
       const existingSlug = await client.page.findFirst({
         where: { slug: data.slug },
