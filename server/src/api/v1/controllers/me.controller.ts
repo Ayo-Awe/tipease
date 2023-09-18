@@ -6,9 +6,11 @@ import {
   Conflict,
   Forbidden,
   ResourceNotFound,
+  ServerError,
   Unprocessable,
 } from "../../../errors/httpErrors";
 import profileImageQueue from "../../../queues/profileImage.queue";
+import paystackService from "../../../services/paystack.service";
 
 class MeController {
   // Simple demo of user auth
@@ -22,6 +24,9 @@ class MeController {
         email: true,
         firstName: true,
         lastName: true,
+        accountNumber: true,
+        bankName: true,
+        accountName: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -69,7 +74,7 @@ class MeController {
   }
 
   async createUserPage(req: Request, res: Response) {
-    const { id } = req.user!;
+    const { id, activatedAt } = req.user!;
 
     // A user can only have one page
     const existingPage = await client.page.findFirst({ where: { userId: id } });
@@ -121,7 +126,9 @@ class MeController {
     }
 
     // Create page and add images to upload queue
-    const page = await client.page.create({ data: { ...data, userId: id } });
+    const page = await client.page.create({
+      data: { ...data, userId: id, isActive: Boolean(req.user?.activatedAt) },
+    });
     await profileImageQueue.add("profile upload", {
       profileImage: req.files.profile[0],
       bannerImage: req.files.banner?.at(0),
@@ -231,6 +238,61 @@ class MeController {
     }
 
     res.ok({ page: updatedPage });
+  }
+
+  async connectWithrawalAccount(req: Request, res: Response) {
+    const { user } = req;
+    const { data, error } = validator.connectBankValidator(req.body);
+
+    if (error) {
+      throw new BadRequest(error.message, error.code);
+    }
+
+    const bankResolution = await paystackService.resolveBank(
+      data.accountNumber,
+      data.bankCode
+    );
+
+    if (!bankResolution) {
+      throw new BadRequest(
+        "Couldn't resolve bank details",
+        "INVALID_REQUEST_PARAMETERS"
+      );
+    }
+
+    // User is trying to connect the same account
+    if (bankResolution.account_number === user!.accountNumber) {
+      return res.noContent();
+    }
+
+    const subaccount = await paystackService.createSubaccount({
+      ...data,
+      userId: user!.id,
+    });
+
+    if (!subaccount) {
+      throw new ServerError(
+        "An error occured with our third party payment provider",
+        "THIRD_PARTY_API_FAILURE"
+      );
+    }
+
+    await client.user.update({
+      data: {
+        accountNumber: data.accountNumber,
+        bankCode: data.bankCode,
+        accountName: bankResolution.account_name,
+        bankName: subaccount.settlement_bank,
+        activatedAt: user?.activatedAt || new Date(),
+        subaccount: subaccount.subaccount_code,
+        page: {
+          update: { isActive: true },
+        },
+      },
+      where: { id: user!.id },
+    });
+
+    res.noContent();
   }
 }
 

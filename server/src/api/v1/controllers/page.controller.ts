@@ -12,6 +12,7 @@ class PageController {
       include: {
         user: {
           select: {
+            activatedAt: true,
             firstName: true,
             lastName: true,
           },
@@ -26,7 +27,7 @@ class PageController {
       },
     });
 
-    if (!page) {
+    if (!page || !page.user.activatedAt || !page.isActive) {
       throw new ResourceNotFound("Page not found", "RESOURCE_NOT_FOUND");
     }
 

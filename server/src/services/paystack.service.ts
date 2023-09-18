@@ -8,7 +8,7 @@ const RESOLUTION_CACHE_EXPIRATION = 60 * 15; // 15 minss
 dotenv.config();
 
 const paystackSecret = process.env.PAYSTACK_SECRET!;
-const PERCENTAGE_CHARGE = 0.05;
+const PERCENTAGE_CHARGE = 0.1;
 
 interface ResolveAccNoResponse {
   status: boolean;
@@ -46,7 +46,7 @@ interface CreateSubAccountResponse {
 type UpdateSubaccountResponse = CreateSubAccountResponse;
 
 interface CreateSubAccountData {
-  teamId: number;
+  userId: number;
   accountNumber: string;
   bankCode: string;
   businessName?: string;
@@ -81,18 +81,19 @@ interface BankResponseData {
   };
 }
 
-interface TicketMetadata {
-  raffleDrawId: number;
-  firstName: string;
-  lastName: string;
-  quantity: number;
+interface TipMetadata {
+  userId: number;
+  email: string;
+  message?: string;
+  tokens: number;
 }
 
 export interface InitiatePaymentOptions {
   amount: number;
   email: string;
   subaccount: string;
-  metadata: TicketMetadata;
+  currency?: string;
+  metadata: TipMetadata;
 }
 
 interface InitiatePaymentResponse {
@@ -148,7 +149,7 @@ class PayStackService {
   async createSubaccount(data: CreateSubAccountData) {
     try {
       const payload = {
-        business_name: data.businessName || `team_${data.teamId}`,
+        business_name: data.businessName || `team_${data.userId}`,
         bank_code: data.bankCode,
         account_number: data.accountNumber,
         percentage_charge: data.percentageCharge || PERCENTAGE_CHARGE,
@@ -168,7 +169,7 @@ class PayStackService {
 
   async updateSubaccount(
     subaccountCode: string,
-    data: Omit<CreateSubAccountData, "teamId">
+    data: Omit<CreateSubAccountData, "userId">
   ) {
     try {
       const payload = {
@@ -190,8 +191,8 @@ class PayStackService {
     }
   }
 
-  async getAllBanks() {
-    const cachedBanks = await redisClient.get("banks");
+  async getAllBanks(country: string) {
+    const cachedBanks = await redisClient.get(`banks:${country}`);
 
     if (cachedBanks) {
       return JSON.parse(cachedBanks) as Bank[];
@@ -207,6 +208,7 @@ class PayStackService {
           use_cursor: true,
           next,
           perPage: 100,
+          country,
         },
       });
 
@@ -216,7 +218,7 @@ class PayStackService {
       next = meta.next;
     }
 
-    await redisClient.set("banks", JSON.stringify(banks), {
+    await redisClient.set(`banks:${country}`, JSON.stringify(banks), {
       NX: true,
       EX: BANK_CACHE_EXPIRATION,
     });

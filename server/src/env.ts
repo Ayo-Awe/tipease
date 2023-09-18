@@ -11,7 +11,7 @@ export const envSchema = z.object({
   SPACES_SECRET: z.string(),
   CLERK_WEBHOOK_SIGNING_SECRET: z.string(),
   SPACES_CDN_ENDPOINT: z.string(),
-  // PAYSTACK_SECRET: z.string(),
+  PAYSTACK_SECRET: z.string(),
   MAILGUN_API_KEY: z.string(),
   MAILGUN_DOMAIN: z.string(),
   MAILGUN_SENDER_EMAIL: z.string().email(),

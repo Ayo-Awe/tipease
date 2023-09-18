@@ -1,4 +1,4 @@
-import { Currency } from "@prisma/client";
+import { Country, Currency } from "@prisma/client";
 import client from ".";
 
 async function main() {
@@ -9,8 +9,20 @@ async function main() {
     { code: "USD", name: "US Dollar", minimumTipAmount: 1 },
   ];
 
+  const countryData: Omit<Country, "id">[] = [
+    { code: "NG", name: "Nigeria", currencyCode: "NGN" },
+    { code: "GH", name: "Ghana", currencyCode: "GHS" },
+    // { code: "ZA", name: "South Africa", currencyCode: "ZAR" },
+    { code: "KE", name: "Kenya", currencyCode: "KES" },
+  ];
+
   await client.currency.createMany({
     data: currencyData,
+    skipDuplicates: true,
+  });
+
+  await client.country.createMany({
+    data: countryData,
     skipDuplicates: true,
   });
 }

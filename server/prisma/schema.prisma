@@ -17,11 +17,15 @@ model User {
   email String @unique
   clerkId String @unique
   subaccount String?
+  accountNumber String?
+  bankName String?
+  accountName String?
+  bankCode String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   activatedAt DateTime? @map("activated_at")
   page Page?
-  donations Donation[]
+  tips Tip[]
 
   @@map("users")
 }
@@ -55,7 +59,7 @@ model Currency {
   @@map("currencies")
 }
 
-model Donation {
+model Tip {
   id Int @id @default(autoincrement())
   message String @db.Text @default("")
   email String @db.VarChar(255)
@@ -65,5 +69,16 @@ model Donation {
   user User @relation(fields: [userId], references: [id])
 
 
-@@map("donations")
+@@map("tips")
 }
+
+model Country {
+  id Int @id @default(autoincrement())
+  name String
+  code String @unique
+  currencyCode String @unique
+
+  @@map("countries")
+}
+
+

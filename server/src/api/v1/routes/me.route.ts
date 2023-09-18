@@ -9,6 +9,7 @@ const meRouter = express.Router();
 // Welcome endpoint
 meRouter.get("/", auth, controller.getAuthenticatedUser);
 meRouter.patch("/", auth, controller.editUserProfile);
+meRouter.put("/withdrawal-account", auth, controller.connectWithrawalAccount);
 meRouter.get("/page", auth, controller.getUserPage);
 meRouter.post(
   "/page",
