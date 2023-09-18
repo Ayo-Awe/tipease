@@ -12,6 +12,7 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { ExpressAdapter } from "@bull-board/express";
 import emailQueue from "./queues/email.queue";
 import profileImageQueue from "./queues/profileImage.queue";
+import path from "path";
 
 const app = express();
 const whitelist = ["http://localhost:3000"];
@@ -35,6 +36,8 @@ app.use(
 );
 app.use(cookieParser());
 app.use(cors({ origin: whitelist }));
+app.use(express.static(path.resolve("../client/dist")));
+console.log(path.resolve("../client/dist"));
 app.use(morgan("dev"));
 app.use("/admin/queues", serverAdapter.getRouter());
 
@@ -45,9 +48,13 @@ app.use("/api/v1", v1Router);
 app.use(errorMiddlewares.errorLogger);
 app.use(errorMiddlewares.errorHandler);
 
-// 404 Handler
-app.use((req, res) => {
-  res.error(404, "Resource not found", "UNKNOWN_ENDPOINT");
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve("../client/dist", "index.html"));
 });
+
+// // 404 Handler
+// app.use((req, res) => {
+//   res.error(404, "Resource not found", "UNKNOWN_ENDPOINT");
+// });
 
 export default app;

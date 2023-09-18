@@ -1,0 +1,21 @@
+{
+  "name": "tipease",
+  "version": "1.0.0",
+  "description": "## Description",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm --prefix ./server/ run build:digitalocean && npm --prefix ./client/ run build",
+    "start": "npm --prefix ./server/ run start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ayo-Awe/tipease.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ayo-Awe/tipease/issues"
+  },
+  "homepage": "https://github.com/Ayo-Awe/tipease#readme"
+}
