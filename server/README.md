@@ -52,17 +52,35 @@ Before running this project, ensure you have the following prerequisites:
    - Rename the `.env.example` file to `.env`.
    - Modify the `.env` file and update the necessary variables.
 
-4. Start the server:
+4. Run database migrations
+
+   ```bash
+   npm run db:migrate
+   ```
+
+5. Run database seeders
+
+   ```bash
+   npm run db:seed
+   ```
+
+6. Start the server:
 
    ```bash
    npm start
+   ```
+
+   or run in development mode
+
+   ```bash
+   npm run dev
    ```
 
 ## Usage
 
 ## API Documentation
 
-The API documentation is available [here](https://documenter.getpostman.com/view/28334766/2s946fcsLb)
+The API documentation is available [here](https://documenter.getpostman.com/view/27880162/2s9YC7UXyK)
 
 ## Testing
 
@@ -75,6 +93,7 @@ The API documentation is available [here](https://documenter.getpostman.com/view
 - `npm run lint`: Performs linting checks. (WIP)
 - `npm run db:migrate`: Runs database migrations.
 - `npm run db:generate`: Generates database migrations
+- `npm run db:seed`: Seeds database
 - `npm run dev`: Starts the server in development mode with automatic reloading.
 
 ## Contributing
