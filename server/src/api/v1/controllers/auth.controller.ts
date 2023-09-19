@@ -1,8 +1,4 @@
 import { Request, Response } from "express";
-import client from "../../../db";
-import * as validator from "../validators/me.validator";
-import { BadRequest } from "../../../errors/httpErrors";
-import jwt from "jsonwebtoken";
 import clerkClient from "@clerk/clerk-sdk-node";
 
 class AuthController {
