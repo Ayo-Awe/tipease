@@ -1,16 +1,9 @@
 import { Request, Response } from "express";
 import client from "../../../db";
 import * as validator from "../validators/me.validator";
-import {
-  BadRequest,
-  Conflict,
-  Forbidden,
-  ResourceNotFound,
-  ServerError,
-  Unprocessable,
-} from "../../../errors/httpErrors";
-import profileImageQueue from "../../../queues/profileImage.queue";
+import { BadRequest, Conflict, ServerError } from "../../../errors/httpErrors";
 import paystackService from "../../../services/paystack.service";
+import { stringifyArray } from "../../../utils/commonHelpers";
 
 class MeController {
   // Simple demo of user auth
@@ -27,6 +20,9 @@ class MeController {
         accountNumber: true,
         bankName: true,
         accountName: true,
+        pricePerToken: true,
+        paymentCurrency: true,
+        activatedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -42,202 +38,33 @@ class MeController {
       throw new BadRequest(error.message, error.code);
     }
 
-    await client.user.update({ where: { id }, data });
-
-    res.noContent();
-  }
-
-  async getUserPage(req: Request, res: Response) {
-    const { id } = req.user!;
-
-    const page = await client.page.findFirst({
-      where: { userId: id },
-      include: {
-        tipCurrency: {
-          select: { name: true, code: true, minimumTipAmount: true },
-        },
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!page) {
-      throw new ResourceNotFound("User has no page", "RESOURCE_NOT_FOUND");
-    }
-
-    res.ok({ page });
-  }
-
-  async createUserPage(req: Request, res: Response) {
-    const { id, activatedAt } = req.user!;
-
-    // A user can only have one page
-    const existingPage = await client.page.findFirst({ where: { userId: id } });
-    if (existingPage) {
-      throw new Conflict("User already has a page", "EXISTING_USER_PAGE");
-    }
-
-    if (!req.files || Array.isArray(req.files) || !req.files.profile) {
-      throw new BadRequest(
-        "Profile image is required",
-        "MISSING_REQUIRED_FIELD"
-      );
-    }
-
-    // Validate request body
-    const { data, error } = validator.createPageValidator(req.body);
-    if (error) {
-      throw new BadRequest(error.message, error.code);
-    }
-
-    // Validate currency id
-    const currency = await client.currency.findFirst({
-      where: { id: data.tipCurrencyId },
-    });
-
-    if (!currency) {
-      throw new Unprocessable(
-        "Cannot process request due to invalid currency",
-        "UNPROCESSABLE"
-      );
-    }
-
-    if (data.pricePerToken < currency.minimumTipAmount) {
-      throw new BadRequest(
-        "Price per token must be greater or equal to minimum tip amount.",
-        "INVALID_REQUEST_PARAMETERS"
-      );
-    }
-
-    const existingSlug = await client.page.findFirst({
-      where: { slug: data.slug },
-    });
-
-    if (existingSlug) {
-      throw new BadRequest(
-        "Slug is not available",
-        "INVALID_REQUEST_PARAMETERS"
-      );
-    }
-
-    // Create page and add images to upload queue
-    const page = await client.page.create({
-      data: { ...data, userId: id, isActive: Boolean(req.user?.activatedAt) },
-    });
-    await profileImageQueue.add("profile upload", {
-      profileImage: req.files.profile[0],
-      bannerImage: req.files.banner?.at(0),
-      pageId: page.id,
-    });
-
-    res.created({ page });
-  }
-
-  async updatePageStatus(req: Request, res: Response) {
-    const { id } = req.user!;
-
-    const { data, error } = validator.editPageStatus(req.body);
-    if (error) {
-      throw new BadRequest(error.message, error.code);
-    }
-
-    if (!req.user!.activatedAt) {
-      throw new Forbidden(
-        "Cannot edit page status until user account is activated.",
-        "ACCOUNT_NOT_ACTIVATED"
-      );
-    }
-
-    const page = await client.page.findFirst({
-      where: { userId: id },
-      include: {
-        user: { select: { subaccount: true } },
-      },
-    });
-
-    if (!page) {
-      throw new ResourceNotFound("User has no page", "RESOURCE_NOT_FOUND");
-    }
-
-    let updatedPage;
-    if (data.status === "enabled") {
-      updatedPage = await client.page.update({
-        where: { id: page.id },
-        data: { isActive: true },
-      });
-    } else {
-      updatedPage = await client.page.update({
-        where: { id: page.id },
-        data: { isActive: false },
-      });
-    }
-
-    res.ok({ page: updatedPage });
-  }
-
-  async editPage(req: Request, res: Response) {
-    const { id } = req.user!;
-
-    const { data, error } = validator.editPage(req.body);
-    if (error) {
-      throw new BadRequest(error.message, error.code);
-    }
-
-    // Check for conflicting slugs
-    if (data.slug) {
-      const existingSlug = await client.page.findFirst({
-        where: { slug: data.slug },
-      });
-
-      if (existingSlug) {
+    if (data.pricePerToken) {
+      // User account must be activated
+      if (!req.user?.activatedAt || !req.user.paymentCurrencyId) {
         throw new BadRequest(
-          "Slug is not available",
+          "Cannot update price per token because user is not activated.",
+          "INVALID_REQUEST_PARAMETERS"
+        );
+      }
+
+      const paymentCurrency = await client.currency.findFirst({
+        where: { id: req.user.paymentCurrencyId },
+      });
+
+      // Per per token must be in allowed tip amounts
+      if (!paymentCurrency?.allowedTipAmounts.includes(data.pricePerToken)) {
+        throw new BadRequest(
+          `Price per token must be one of ${stringifyArray(
+            paymentCurrency!.allowedTipAmounts
+          )}`,
           "INVALID_REQUEST_PARAMETERS"
         );
       }
     }
 
-    // Check if tip currency id is valid
-    if (data.tipCurrencyId) {
-      const currency = await client.currency.findFirst({
-        where: { id: data.tipCurrencyId },
-      });
+    await client.user.update({ where: { id }, data });
 
-      if (!currency) {
-        throw new Unprocessable(
-          "Cannot process request due to invalid currency",
-          "UNPROCESSABLE"
-        );
-      }
-    }
-
-    const updatedPage = await client.page.update({
-      where: { userId: id },
-      data,
-    });
-
-    if (!updatedPage) {
-      throw new ResourceNotFound("User has no page", "RESOURCE_NOT_FOUND");
-    }
-
-    // Update page profile image and banner image if specified
-    if (
-      !Array.isArray(req.files) &&
-      (req.files?.profile || req.files?.banner)
-    ) {
-      await profileImageQueue.add("profile upload", {
-        profileImage: req.files.profile?.at(0),
-        bannerImage: req.files.banner?.at(0),
-        pageId: updatedPage.id,
-      });
-    }
-
-    res.ok({ page: updatedPage });
+    res.noContent();
   }
 
   async connectWithrawalAccount(req: Request, res: Response) {
@@ -246,6 +73,27 @@ class MeController {
 
     if (error) {
       throw new BadRequest(error.message, error.code);
+    }
+
+    const currency = await client.currency.findFirst({
+      where: { code: { equals: data.currency, mode: "insensitive" } },
+    });
+
+    if (!currency) {
+      throw new BadRequest(
+        "Currency is not supported",
+        "INVALID_REQUEST_PARAMETERS"
+      );
+    }
+
+    // Currency country must be same as bank country
+    const bank = await paystackService.getBank(currency.country, data.bankCode);
+    if (!bank) {
+      throw new BadRequest(
+        "Invalid bank code or bank doesn't support this currency. \
+        Bank country and currency country must match.",
+        "INVALID_REQUEST_PARAMETERS"
+      );
     }
 
     const bankResolution = await paystackService.resolveBank(
@@ -265,10 +113,20 @@ class MeController {
       return res.noContent();
     }
 
-    const subaccount = await paystackService.createSubaccount({
-      ...data,
-      userId: user!.id,
-    });
+    let subaccount;
+
+    if (user?.subaccount) {
+      subaccount = await paystackService.updateSubaccount(user.subaccount, {
+        accountNumber: data.accountNumber,
+        bankCode: data.bankCode,
+      });
+    } else {
+      subaccount = await paystackService.createSubaccount({
+        bankCode: data.bankCode,
+        accountNumber: data.accountNumber,
+        userId: user!.id,
+      });
+    }
 
     if (!subaccount) {
       throw new ServerError(
@@ -277,17 +135,25 @@ class MeController {
       );
     }
 
+    const page = await client.page.findFirst({
+      where: { userId: user!.id },
+    });
+
     await client.user.update({
       data: {
         accountNumber: data.accountNumber,
         bankCode: data.bankCode,
         accountName: bankResolution.account_name,
         bankName: subaccount.settlement_bank,
+        paymentCurrencyId: currency.id,
+        pricePerToken: currency.defaultTipAmount,
         activatedAt: user?.activatedAt || new Date(),
         subaccount: subaccount.subaccount_code,
-        page: {
-          update: { isActive: true },
-        },
+        page: page
+          ? {
+              update: { isActive: true },
+            }
+          : undefined,
       },
       where: { id: user!.id },
     });

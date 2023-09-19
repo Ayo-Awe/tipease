@@ -15,15 +15,19 @@ model User {
   firstName String? @map("first_name")
   lastName String? @map("last_name")
   email String @unique
-  clerkId String @unique
-  subaccount String?
-  accountNumber String?
-  bankName String?
-  accountName String?
-  bankCode String?
+  clerkId String @unique @map("clerk_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   activatedAt DateTime? @map("activated_at")
+  subaccount String?
+  accountNumber String? @map("account_number")
+  bankName String? @map("bank_name")
+  accountName String? @map("account_name")
+  bankCode String? @map("bank_code")
+  paymentCurrencyId Int? @map("payment_currency_id")
+  pricePerToken Int? @map("price_per_token") // defaults to that of the payment currency
+  paymentCurrency Currency? @relation(fields: [paymentCurrencyId], references: [id])
+
   page Page?
   tips Tip[]
 
@@ -34,16 +38,15 @@ model Page {
   id Int @id @default(autoincrement())
   slug String @db.VarChar(100)
   isActive Boolean @default(false) @map("is_active")
-  pricePerToken Int @map("price_per_token")
   profileImage String? @map("profile_image")
   bannerImage String? @map("banner_image")
   qrImage String? @map("qr_image")
+  websiteUrl String? @map("website_url")
+  bio String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   user User @relation(fields: [userId], references: [id])
   userId Int @unique @map("user_id")
-  tipCurrencyId Int @map("tip_currency_id")
-  tipCurrency Currency @relation(fields: [tipCurrencyId], references: [id])
 
   @@map("pages")
 }
@@ -52,9 +55,12 @@ model Currency {
   id Int @id @default(autoincrement())
   name String
   code String @unique @db.Char(3)
-  minimumTipAmount Int @map("minimum_tip_amount")
+  defaultTipAmount Int @map("default_tip_amount")
+  allowedTipAmounts Int[] @map("allowed_tip_amounts")
+  country String
+  countryCode String @map("country_code")
 
-  pages Page[]
+  users User[]
 
   @@map("currencies")
 }
@@ -71,14 +77,4 @@ model Tip {
 
 @@map("tips")
 }
-
-model Country {
-  id Int @id @default(autoincrement())
-  name String
-  code String @unique
-  currencyCode String @unique
-
-  @@map("countries")
-}
-
 

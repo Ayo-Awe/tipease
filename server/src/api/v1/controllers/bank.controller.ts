@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import client from "../../../db";
 import * as validator from "../validators/bank.validator";
 import paystackService from "../../../services/paystack.service";
-import { BadRequest, ServerError } from "../../../errors/httpErrors";
+import { BadRequest } from "../../../errors/httpErrors";
 
 class BankController {
   // Simple demo of user auth
@@ -11,16 +10,6 @@ class BankController {
 
     if (typeof country !== "string") {
       country = "nigeria";
-    }
-
-    console.log(country);
-
-    const isValid = await client.country.findFirst({
-      where: { name: { equals: country, mode: "insensitive" } },
-    });
-
-    if (!isValid) {
-      return res.ok({ banks: [] });
     }
 
     const banks = await paystackService.getAllBanks(country);

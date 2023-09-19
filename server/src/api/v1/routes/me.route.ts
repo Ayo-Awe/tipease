@@ -1,16 +1,17 @@
 import express from "express";
 
-import controller from "../controllers/me.controller";
+import meController from "../controllers/me.controller";
 import { auth } from "../../middlewares/authMiddleware";
 import uploadMiddleware from "../../../config/multer.config";
+import pageController from "../controllers/page.controller";
 
 const meRouter = express.Router();
 
 // Welcome endpoint
-meRouter.get("/", auth, controller.getAuthenticatedUser);
-meRouter.patch("/", auth, controller.editUserProfile);
-meRouter.put("/withdrawal-account", auth, controller.connectWithrawalAccount);
-meRouter.get("/page", auth, controller.getUserPage);
+meRouter.get("/", auth, meController.getAuthenticatedUser);
+meRouter.patch("/", auth, meController.editUserProfile);
+meRouter.put("/withdrawal-account", auth, meController.connectWithrawalAccount);
+meRouter.get("/page", auth, pageController.getUserPage);
 meRouter.post(
   "/page",
   auth,
@@ -18,7 +19,7 @@ meRouter.post(
     { name: "profile", maxCount: 1 },
     { name: "banner", maxCount: 1 },
   ]),
-  controller.createUserPage
+  pageController.createUserPage
 );
 meRouter.patch(
   "/page",
@@ -27,9 +28,9 @@ meRouter.patch(
     { name: "profile", maxCount: 1 },
     { name: "banner", maxCount: 1 },
   ]),
-  controller.editPage
+  pageController.editUserPage
 );
 
-meRouter.put("/page/status", auth, controller.updatePageStatus);
+meRouter.put("/page/status", auth, pageController.updatePageStatus);
 
 export default meRouter;

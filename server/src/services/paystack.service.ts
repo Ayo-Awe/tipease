@@ -226,6 +226,12 @@ class PayStackService {
     return banks;
   }
 
+  async getBank(country: string, code: string) {
+    const banks = await this.getAllBanks(country);
+
+    return banks.find((bank) => bank.code === code);
+  }
+
   async initiateTicketPayment(options: InitiatePaymentOptions) {
     try {
       const response = await this.axios.post<InitiatePaymentResponse>(
