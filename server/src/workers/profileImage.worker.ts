@@ -28,6 +28,10 @@ profileImageWorker.on("ready", () => {
   console.log("Profile Image worker started successfully");
 });
 
+profileImageQueue.on("error", (error) => {
+  console.log("image queue worker:", error);
+});
+
 profileImageWorker.on("error", (e) => console.log(e));
 
 async function jobHandler(job: Job<ProfileImageJobData>) {

@@ -22,6 +22,10 @@ emailWorker.on("ready", () => {
   console.log("Email worker started successfully");
 });
 
+emailWorker.on("error", (error) => {
+  console.log("email worker:", error);
+});
+
 async function jobHandler(job: Job<EmailJobData>) {
   const messageData = {
     from: job.data.from || process.env.MAILGUN_SENDER_EMAIL,
