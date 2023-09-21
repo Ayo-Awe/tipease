@@ -3,8 +3,7 @@ import { ZodError, z } from "zod";
 export const envSchema = z.object({
   PORT: z.string().optional(),
   DATABASE_URL: z.string(),
-  REDIS_HOST: z.string(),
-  REDIS_PORT: z.string(),
+  REDIS_URL: z.string(),
   CLERK_SECRET_KEY: z.string(),
   CLERK_PEM_PUBLIC_KEY: z.string(),
   SPACES_KEY: z.string(),

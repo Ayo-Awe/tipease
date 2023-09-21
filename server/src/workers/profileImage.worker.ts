@@ -4,6 +4,7 @@ import profileImageQueue from "../queues/profileImage.queue";
 import { randomUUID } from "crypto";
 import client from "../db";
 import s3Service from "../services/s3.service";
+import { redisClient } from "../config/redis.config";
 
 export interface ProfileImageJobData {
   profileImage?: Express.Multer.File;
@@ -17,10 +18,7 @@ export const profileImageWorker = new Worker(
   {
     // useWorkerThreads: true,
     autorun: false,
-    connection: {
-      host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT),
-    },
+    connection: redisClient,
   }
 );
 
@@ -33,6 +31,7 @@ profileImageQueue.on("error", (error) => {
 });
 
 profileImageWorker.on("error", (e) => console.log(e));
+profileImageWorker.on("failed", (e) => console.log(e));
 
 async function jobHandler(job: Job<ProfileImageJobData>) {
   const { profileImage, bannerImage, pageId } = job.data;

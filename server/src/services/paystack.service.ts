@@ -83,12 +83,11 @@ interface BankResponseData {
 
 interface TipMetadata {
   userId: number;
-  email: string;
   message?: string;
-  tokens: number;
+  tokenCount: number;
 }
 
-export interface InitiatePaymentOptions {
+export interface InitiateTipPaymentOptions {
   amount: number;
   email: string;
   subaccount: string;
@@ -130,13 +129,10 @@ class PayStackService {
         }
       );
 
-      await redisClient.set(
+      await redisClient.setex(
         `resolve:${accountNumber}-${bankCode}`,
-        JSON.stringify(response.data.data),
-        {
-          NX: true,
-          EX: RESOLUTION_CACHE_EXPIRATION,
-        }
+        RESOLUTION_CACHE_EXPIRATION,
+        JSON.stringify(response.data.data)
       );
 
       return response.data.data;
@@ -218,10 +214,11 @@ class PayStackService {
       next = meta.next;
     }
 
-    await redisClient.set(`banks:${country}`, JSON.stringify(banks), {
-      NX: true,
-      EX: BANK_CACHE_EXPIRATION,
-    });
+    await redisClient.setex(
+      `banks:${country}`,
+      BANK_CACHE_EXPIRATION,
+      JSON.stringify(banks)
+    );
 
     return banks;
   }
@@ -232,13 +229,13 @@ class PayStackService {
     return banks.find((bank) => bank.code === code);
   }
 
-  async initiateTicketPayment(options: InitiatePaymentOptions) {
+  async initiateTipPayment(options: InitiateTipPaymentOptions) {
     try {
       const response = await this.axios.post<InitiatePaymentResponse>(
         "/transaction/initialize",
         {
           ...options,
-          amount: options.amount * 100, // in kobo,
+          amount: options.amount * 100, // in kobo, cents, pesewas
         }
       );
       return response.data.data.authorization_url;

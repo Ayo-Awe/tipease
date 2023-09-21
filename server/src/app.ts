@@ -52,9 +52,9 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve("../client/dist", "index.html"));
 });
 
-// // 404 Handler
-// app.use((req, res) => {
-//   res.error(404, "Resource not found", "UNKNOWN_ENDPOINT");
-// });
+// 404 Handler
+app.use((req, res) => {
+  res.error(404, "Resource not found", "UNKNOWN_ENDPOINT");
+});
 
 export default app;

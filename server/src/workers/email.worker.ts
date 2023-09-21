@@ -1,5 +1,6 @@
 import { Worker, Job } from "bullmq";
 import { mailgunClient } from "../config/mailgun.config";
+import { redisClient } from "../config/redis.config";
 
 export interface EmailJobData {
   from?: string;
@@ -12,10 +13,7 @@ export interface EmailJobData {
 export const emailWorker = new Worker("email", jobHandler, {
   useWorkerThreads: true,
   autorun: false,
-  connection: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT),
-  },
+  connection: redisClient,
 });
 
 emailWorker.on("ready", () => {
