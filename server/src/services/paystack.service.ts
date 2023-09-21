@@ -92,6 +92,7 @@ export interface InitiateTipPaymentOptions {
   email: string;
   subaccount: string;
   currency?: string;
+  reference?: string;
   metadata: TipMetadata;
 }
 

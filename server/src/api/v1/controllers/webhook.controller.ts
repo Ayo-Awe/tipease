@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Webhook } from "svix";
 import { WebhookEvent } from "@clerk/clerk-sdk-node";
 import client from "../../../db";
+import crypto from "crypto";
 
 class WebhookController {
   async clerkHandler(req: Request, res: Response) {
@@ -38,6 +39,42 @@ class WebhookController {
         });
     }
 
+    res.sendStatus(200);
+  }
+
+  async paystackHandler(req: Request, res: Response) {
+    const hash = crypto
+      .createHmac("sha512", process.env.PAYSTACK_SECRET)
+      .update(JSON.stringify(req.body))
+      .digest("hex");
+
+    // Validate webhook origin
+    if (hash != req.headers["x-paystack-signature"]) return res.sendStatus(200);
+
+    const event = req.body;
+    // Only handle charge success events
+    if (event.event !== "charge.success") return res.sendStatus(200);
+
+    // Avoid handling the same tip twice
+    const existingTip = await client.tip.findFirst({
+      where: { reference: event.data.reference },
+    });
+    if (existingTip) return res.sendStatus(200);
+
+    // Create tip and send success email
+    await client.tip.create({
+      data: {
+        email: event.data.customer.email,
+        reference: event.data.reference,
+        message: event.data.metadata.message,
+        amount: event.data.amount / 100, // event.data.amount is in smallest denomination e.g kobo, pesewas and cents
+        tokenCount: Number(event.data.metadata.tokenCount),
+        user: { connect: { id: Number(event.data.metadata.userId) } },
+        currency: { connect: { code: event.data.currency } },
+      },
+    });
+
+    // todo: send thank you email to tipper
     res.sendStatus(200);
   }
 }

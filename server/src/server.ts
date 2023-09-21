@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 import app from "./app";
 import "./env";
-import { redisClient } from "./config/redis.config";
 import { startWorkers } from "./workers";
 
 process.on("uncaughtException", (error) => {

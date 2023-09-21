@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import client from "../../../db";
 import * as validator from "../validators/me.validator";
-import { BadRequest, Conflict, ServerError } from "../../../errors/httpErrors";
+import { BadRequest, ServerError } from "../../../errors/httpErrors";
 import paystackService from "../../../services/paystack.service";
 import { stringifyArray } from "../../../utils/commonHelpers";
 
@@ -32,6 +32,7 @@ class MeController {
 
   async editUserProfile(req: Request, res: Response) {
     const { id } = req.user!;
+
     const { data, error } = validator.editProfileValidator(req.body);
 
     if (error) {
@@ -139,6 +140,7 @@ class MeController {
       where: { userId: user!.id },
     });
 
+    // Add withdrawal account and activate page and user account
     await client.user.update({
       data: {
         accountNumber: data.accountNumber,

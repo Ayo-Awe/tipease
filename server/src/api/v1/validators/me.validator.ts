@@ -14,7 +14,7 @@ export function editProfileValidator(payload: any) {
         invalid_type_error: "Price per token must be a number",
       })
       .int("Price per token must be an integer")
-      .positive("Price pert token must be positive")
+      .positive("Price per token must be positive")
       .optional(),
   });
 

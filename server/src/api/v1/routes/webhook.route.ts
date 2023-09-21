@@ -10,5 +10,6 @@ router.post(
   express.raw({ type: "application/json" }),
   controller.clerkHandler
 );
+router.post("/paystack", controller.paystackHandler);
 
 export default router;

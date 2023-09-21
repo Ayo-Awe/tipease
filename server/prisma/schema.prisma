@@ -61,6 +61,7 @@ model Currency {
   countryCode String @map("country_code")
 
   users User[]
+  tips Tip[]
 
   @@map("currencies")
 }
@@ -69,10 +70,14 @@ model Tip {
   id Int @id @default(autoincrement())
   message String @db.Text @default("")
   email String @db.VarChar(255)
-  reference String
-  createdAt DateTime @default(now()) @map("created_at")
+  reference String @unique
+  amount Int
+  tokenCount Int
+  currencyId Int
+  currency Currency @relation(fields: [currencyId], references: [id])
   userId Int
   user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
 
 
 @@map("tips")
