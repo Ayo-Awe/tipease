@@ -48,7 +48,7 @@ app.use("/api/v1", v1Router);
 app.use(errorMiddlewares.errorLogger);
 app.use(errorMiddlewares.errorHandler);
 
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.resolve("../client/dist", "index.html"));
 });
 
