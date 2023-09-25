@@ -215,6 +215,14 @@ class PayStackService {
       next = meta.next;
     }
 
+    // sort banks before caching
+    banks.sort((a, b) => {
+      if (a.name > b.name) {
+        return 1;
+      }
+      return -1;
+    });
+
     await redisClient.setex(
       `banks:${country}`,
       BANK_CACHE_EXPIRATION,
