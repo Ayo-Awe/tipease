@@ -28,6 +28,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     req.user = user;
     next();
   } catch (error: any) {
+    console.log(error);
     if (error instanceof TokenExpiredError) {
       next(new Unauthorized("Token expired", "EXPIRED_TOKEN"));
     } else if (error instanceof JsonWebTokenError) {
