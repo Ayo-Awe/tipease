@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import useSlug from "../hooks/useSlug";
-import { HiCheckCircle } from "react-icons/hi2";
+import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
 import useCreatePage from "../hooks/useCreatePage";
 import { useNavigate } from "react-router-dom";
 import useUserPage from "../hooks/useUserPage";
@@ -42,7 +42,7 @@ const CreatePageForm = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(formSchema),
   });
@@ -63,9 +63,10 @@ const CreatePageForm = () => {
     formdata.append("slug", data.tipeaseLink);
     formdata.append("bio", data.about);
     formdata.append("websiteUrl", data.websiteUrl);
-
     mutate(formdata);
   }
+
+  useEffect(() => console.log(errors), [errors]);
 
   return (
     <>
@@ -102,12 +103,10 @@ const CreatePageForm = () => {
             endContent={
               isLoading ? (
                 <Spinner />
+              ) : isAvailable ? (
+                <HiCheckCircle className={`text-green-400 text-2xl`} />
               ) : (
-                <HiCheckCircle
-                  className={`text-${
-                    isAvailable ? "green" : "red"
-                  }-400 text-2xl`}
-                />
+                <HiXCircle className="text-red-400 text-2xl" />
               )
             }
           />
@@ -136,7 +135,7 @@ const CreatePageForm = () => {
             color="primary"
             type="submit"
             isLoading={isSubmitting}
-            isDisabled={!isAvailable || !isValid}
+            isDisabled={!isAvailable}
           >
             Continue
           </Button>

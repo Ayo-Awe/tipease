@@ -1,9 +1,10 @@
 import { Button, Select, SelectItem, Input, Skeleton } from "@nextui-org/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AccountVerificationCard from "../components/AccountVerificationCard";
 import useBanks from "../hooks/useBanks";
 import useCurrencies from "../hooks/useCurrencies";
 import useResolveBankAccount from "../hooks/useResolveBankAccount";
+import { useAuth } from "@clerk/clerk-react";
 
 const ConnectAccountForm = () => {
   const [selectedCurrency, setSelectedCurrency] = useState();
