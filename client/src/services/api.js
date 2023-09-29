@@ -12,3 +12,45 @@ export async function fetchCurrencies() {
   const response = await client.get("/currencies");
   return response.data.data.currencies;
 }
+
+export async function resolveBankAccount(payload) {
+  const { data } = await client.post("/banks/resolve", payload);
+
+  return {
+    accountName: data.data.account.account_name,
+    accountNumber: data.data.account.account_number,
+  };
+}
+
+export async function getUserPage() {
+  const { data } = await client.get("/me/page");
+  return data.data.page;
+}
+
+export async function getUser() {
+  const { data } = await client.get("/me");
+  return data.data.user;
+}
+
+export async function checkSlugAvailability(slug) {
+  const acceptedStatusCodes = [204, 404];
+
+  const response = await client.get(`/pages/${slug}/availability`, {
+    validateStatus: (status) => acceptedStatusCodes.includes(status),
+  });
+
+  if (response.status === 404) {
+    return false;
+  }
+
+  return true;
+}
+
+export async function createPage(payload) {
+  const { data } = await client.post("/me/page", payload, {
+    headers: {
+      "Content-Type": "'multipart/form-data'",
+    },
+  });
+  return data.data.page;
+}

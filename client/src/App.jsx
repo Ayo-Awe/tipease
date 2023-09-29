@@ -1,93 +1,85 @@
 import { useState } from "react";
-
+import { NextUIProvider } from "@nextui-org/react";
+import CreatePageForm from "./pages/CreatePageForm.jsx";
+import ConnectAccountForm from "./pages/ConnectAccountForm.jsx";
+import { QueryClient, QueryClientProvider } from "react-query";
 import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  Link,
-  Button,
-  NavbarMenuItem,
-  NavbarMenuToggle,
-  NavbarMenu,
-} from "@nextui-org/react";
+  ClerkProvider,
+  RedirectToSignIn,
+  SignIn,
+  SignedIn,
+  SignedOut,
+} from "@clerk/clerk-react";
+import LandingPage from "./pages/LandingPage.jsx";
+import {
+  createBrowserRouter,
+  Route,
+  RouterProvider,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
+import SignUpPage from "./pages/SignUpPage.jsx";
+import SignInPage from "./pages/SignInPage.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
+import RequireUserPage from "./components/RequireUserPage.jsx";
+
+const clerkPublicKey = import.meta.env.VITE_APP_CLERK_PUBLISHABLE_KEY;
 
 function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const menuItems = [
-    "Profile",
-    "Dashboard",
-    "Activity",
-    "Analytics",
-    "System",
-    "Deployments",
-    "My Settings",
-    "Team Settings",
-    "Help & Feedback",
-    "Log Out",
-  ];
+  const navigate = useNavigate();
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <LandingPage />,
+    },
+    {
+      path: "/sign-up",
+      element: <SignUpPage />,
+    },
+    {
+      path: "/sign-in",
+      element: <SignInPage />,
+    },
+    {
+      path: "/complete-page",
+      element: (
+        <SignedIn>
+          <CreatePageForm />
+        </SignedIn>
+      ),
+    },
+    {
+      path: "/connect-withdrawal-account",
+      element: (
+        <RequireAuth>
+          <RequireUserPage>
+            <ConnectAccountForm />
+          </RequireUserPage>
+        </RequireAuth>
+      ),
+    },
+  ]);
 
   return (
-    <Navbar onMenuOpenChange={setIsMenuOpen}>
-      <NavbarContent>
-        <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="sm:hidden"
-        />
-        <NavbarBrand>
-          <p className="font-bold text-inherit">ACME</p>
-        </NavbarBrand>
-      </NavbarContent>
-
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        <NavbarItem>
-          <Link color="foreground" href="#">
-            Features
-          </Link>
-        </NavbarItem>
-        <NavbarItem isActive>
-          <Link href="#" aria-current="page">
-            Customers
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="#">
-            Integrations
-          </Link>
-        </NavbarItem>
-      </NavbarContent>
-      <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Button as={Link} color="primary" href="#" variant="flat">
-            Sign Up
-          </Button>
-        </NavbarItem>
-      </NavbarContent>
-      <NavbarMenu>
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
-            <Link
-              color={
-                index === 2
-                  ? "primary"
-                  : index === menuItems.length - 1
-                  ? "danger"
-                  : "foreground"
-              }
-              className="w-full"
-              href="#"
-              size="lg"
-            >
-              {item}
-            </Link>
-          </NavbarMenuItem>
-        ))}
-      </NavbarMenu>
-    </Navbar>
+    <ClerkProvider
+      publishableKey={clerkPublicKey}
+      navigate={(to) => navigate(to)}
+    >
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/sign-in/*" element={<SignInPage />} />
+        <Route path="/sign-up/*" element={<SignUpPage />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/complete-page" element={<CreatePageForm />} />
+          <Route element={<RequireUserPage />}>
+            <Route
+              path="/connect-withdrawal-account"
+              element={<ConnectAccountForm />}
+            />
+          </Route>
+        </Route>
+      </Routes>
+    </ClerkProvider>
   );
 }
 

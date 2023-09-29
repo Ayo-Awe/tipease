@@ -1,18 +1,17 @@
-import { Button, Select, SelectItem, Input } from "@nextui-org/react";
-import { useEffect, useState } from "react";
+import { Button, Select, SelectItem, Input, Skeleton } from "@nextui-org/react";
+import { useState } from "react";
 import AccountVerificationCard from "../components/AccountVerificationCard";
 import useBanks from "../hooks/useBanks";
 import useCurrencies from "../hooks/useCurrencies";
+import useResolveBankAccount from "../hooks/useResolveBankAccount";
 
 const ConnectAccountForm = () => {
+  const [selectedCurrency, setSelectedCurrency] = useState();
+  const [selectedBank, setSelectedBank] = useState();
+  const [accountNumber, setAccountNumber] = useState();
   const currencies = useCurrencies();
-  const banks = useBanks();
-  const resolvedAccount = {
-    accountNumber: "0123456789",
-    accountName: "BOLU AJIBADE",
-  };
-
-  useEffect(() => console.log(currencies.data), [currencies.data]);
+  const banks = useBanks(selectedCurrency?.country);
+  const resolveAccount = useResolveBankAccount();
 
   return (
     <>
@@ -21,17 +20,20 @@ const ConnectAccountForm = () => {
           How would you like to get paid?
         </h2>
 
-        {/* <AccountVerificationCard {...resolvedAccount} /> */}
-
         <Select
           label="Choose your currency"
           labelPlacement="outside"
           placeholder=" "
           className="my-4"
           isLoading={currencies.isLoading}
+          onChange={(e) => {
+            setSelectedCurrency(
+              currencies.data.find((curr) => curr.code === e.target.value)
+            );
+          }}
         >
           {currencies.data?.map((currency) => (
-            <SelectItem key={currency.id} value={currency.name}>
+            <SelectItem key={currency.code} value={currency.code}>
               {currency.code.toUpperCase() + " - " + currency.name}
             </SelectItem>
           ))}
@@ -42,9 +44,10 @@ const ConnectAccountForm = () => {
           placeholder=" "
           className="my-4"
           isLoading={banks.isLoading}
+          onChange={(e) => setSelectedBank(e.target.value)}
         >
           {banks.data?.map((bank) => (
-            <SelectItem key={bank.id} value={bank.code}>
+            <SelectItem key={bank.code} value={bank.code}>
               {bank.name}
             </SelectItem>
           ))}
@@ -57,7 +60,19 @@ const ConnectAccountForm = () => {
           className="my-4"
           labelPlacement="outside"
           placeholder="0123456789"
+          onChange={(e) => {
+            setAccountNumber(e.target.value);
+            console.log(e.target.value);
+            resolveAccount.mutate({
+              accountNumber: e.target.value,
+              bankCode: selectedBank,
+            });
+          }}
         />
+
+        {resolveAccount.data && (
+          <AccountVerificationCard {...resolveAccount.data} />
+        )}
 
         <Button className="w-full" color="primary">
           Continue
