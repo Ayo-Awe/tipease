@@ -10,6 +10,11 @@ dotenv.config();
 const paystackSecret = process.env.PAYSTACK_SECRET!;
 const PERCENTAGE_CHARGE = 0.1;
 
+interface GetBanksOptions {
+  country?: string;
+  currency?: string;
+}
+
 interface ResolveAccNoResponse {
   status: boolean;
   message: string;
@@ -188,8 +193,10 @@ class PayStackService {
     }
   }
 
-  async getAllBanks(country: string) {
-    const cachedBanks = await redisClient.get(`banks:${country}`);
+  async getAllBanks(options: GetBanksOptions) {
+    const cachedBanks = await redisClient.get(
+      `banks:${JSON.stringify(options)}`
+    );
 
     if (cachedBanks) {
       return JSON.parse(cachedBanks) as Bank[];
@@ -205,7 +212,7 @@ class PayStackService {
           use_cursor: true,
           next,
           perPage: 100,
-          country,
+          ...options,
         },
       });
 
@@ -224,7 +231,7 @@ class PayStackService {
     });
 
     await redisClient.setex(
-      `banks:${country}`,
+      `banks:${JSON.stringify(options)}`,
       BANK_CACHE_EXPIRATION,
       JSON.stringify(banks)
     );
@@ -233,7 +240,7 @@ class PayStackService {
   }
 
   async getBank(country: string, code: string) {
-    const banks = await this.getAllBanks(country);
+    const banks = await this.getAllBanks({ country });
 
     return banks.find((bank) => bank.code === code);
   }

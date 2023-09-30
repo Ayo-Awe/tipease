@@ -6,13 +6,17 @@ import { BadRequest } from "../../../errors/httpErrors";
 class BankController {
   // Simple demo of user auth
   async getBanks(req: Request, res: Response) {
-    let { country = "nigeria" } = req.query;
+    let { country, currency } = req.query;
 
     if (typeof country !== "string") {
-      country = "nigeria";
+      country = undefined;
     }
 
-    const banks = await paystackService.getAllBanks(country);
+    if (typeof currency !== "string") {
+      currency = undefined;
+    }
+
+    const banks = await paystackService.getAllBanks({ country, currency });
 
     res.ok({ banks });
   }
