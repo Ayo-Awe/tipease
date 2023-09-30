@@ -3,8 +3,8 @@ const client = axios.create({
   baseURL: "/api/v1",
 });
 
-export async function fetchBanksByCountry(country = "nigeria") {
-  const { data } = await client.get("/banks", { params: { country } });
+export async function fetchBanksByCountry(options) {
+  const { data } = await client.get("/banks", { params: options });
   return data.data.banks;
 }
 
@@ -53,4 +53,8 @@ export async function createPage(payload) {
     },
   });
   return data.data.page;
+}
+
+export async function connectWithdrawalAccount(payload) {
+  await client.put("/me/withdrawal-account", payload);
 }

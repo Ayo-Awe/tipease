@@ -1,11 +1,11 @@
 import { useQuery } from "react-query";
 import { fetchBanksByCountry } from "../services/api";
 
-const useBanks = (country) => {
+const useBanks = (options) => {
   return useQuery({
-    queryKey: ["banks", country],
-    queryFn: () => fetchBanksByCountry(country),
-    enabled: !!country,
+    queryKey: ["banks", options],
+    queryFn: () => fetchBanksByCountry(options),
+    enabled: !!options,
   });
 };
 
