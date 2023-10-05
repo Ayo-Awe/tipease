@@ -66,8 +66,6 @@ const CreatePageForm = () => {
     mutate(formdata);
   }
 
-  useEffect(() => console.log(errors), [errors]);
-
   return (
     <>
       <div className="max-w-xs md:max-w-sm m-auto py-8">

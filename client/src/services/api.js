@@ -55,6 +55,15 @@ export async function createPage(payload) {
   return data.data.page;
 }
 
+export async function editPage(payload) {
+  const { data } = await client.patch("/me/page", payload, {
+    headers: {
+      "Content-Type": "'multipart/form-data'",
+    },
+  });
+  return data.data.page;
+}
+
 export async function connectWithdrawalAccount(payload) {
   await client.put("/me/withdrawal-account", payload);
 }

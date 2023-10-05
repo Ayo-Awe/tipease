@@ -4,8 +4,8 @@ import { HiOutlineCamera } from "react-icons/hi2";
 import { mergeRefs } from "../utils";
 
 const AvatarInput = forwardRef(
-  ({ className, onChange, name, onBlur, errorMessage }, ref) => {
-    const [image, setImage] = useState();
+  ({ className, onChange, name, onBlur, errorMessage, src }, ref) => {
+    const [image, setImage] = useState(src);
     const localRef = useRef();
     const avatarClassName = errorMessage
       ? `${className} border-2 border-[#C00612]`
