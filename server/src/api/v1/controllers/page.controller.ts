@@ -113,6 +113,7 @@ class PageController {
     const page = await client.page.create({
       data: { ...data, userId: id, isActive: Boolean(req.user?.activatedAt) },
     });
+
     await profileImageQueue.add("profile upload", {
       profileImage: req.files.profile[0],
       bannerImage: req.files.banner?.at(0),

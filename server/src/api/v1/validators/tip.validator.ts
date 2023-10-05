@@ -28,6 +28,12 @@ export function createTipValidator(payload: any) {
         invalid_type_error: "Message must be a string",
       })
       .optional(),
+    redirectUrl: z
+      .string({
+        invalid_type_error: "Redirect url must be a string",
+      })
+      .url("Redirect url must be a valid url")
+      .optional(),
   });
 
   return validateRequestBody(schema, payload);

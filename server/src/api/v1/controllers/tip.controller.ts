@@ -67,6 +67,7 @@ class TipController {
       subaccount: user.subaccount,
       currency: user.paymentCurrency.code,
       reference: data.reference,
+      callback_url: data.redirectUrl,
       metadata: {
         tokenCount: data.tokenCount,
         userId: page.userId,

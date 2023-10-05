@@ -98,6 +98,7 @@ export interface InitiateTipPaymentOptions {
   subaccount: string;
   currency?: string;
   reference?: string;
+  callback_url?: string;
   metadata: TipMetadata;
 }
 

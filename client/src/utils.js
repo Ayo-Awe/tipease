@@ -9,3 +9,7 @@ export function mergeRefs(...refs) {
     }
   };
 }
+
+export function getHostUrl() {
+  return `${window.location.protocol}//${window.location.host}`;
+}

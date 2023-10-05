@@ -58,3 +58,13 @@ export async function createPage(payload) {
 export async function connectWithdrawalAccount(payload) {
   await client.put("/me/withdrawal-account", payload);
 }
+
+export async function getPageBySlug(slug) {
+  const { data } = await client.get(`/pages/${slug}`);
+  return data.data.page;
+}
+
+export async function createTip(slug, payload) {
+  const { data } = await client.post(`/pages/${slug}/tips`, payload);
+  return data.data.paymentLink;
+}
