@@ -23,6 +23,10 @@ import SignInPage from "./pages/SignInPage.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 import RequireUserPage from "./components/RequireUserPage.jsx";
 import CustomPage from "./pages/CustomPage.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Home from "./pages/Home.jsx";
+import TipsPage from "./pages/TipsPage.jsx";
+import Settings from "./pages/Settings.jsx";
 
 const clerkPublicKey = import.meta.env.VITE_APP_CLERK_PUBLISHABLE_KEY;
 
@@ -71,6 +75,12 @@ function App() {
         <Route path="/sign-in/*" element={<SignInPage />} />
         <Route path="/sign-up/*" element={<SignUpPage />} />
         <Route path="/:slug" element={<CustomPage />} />
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route path="" element={<Home />} />
+          <Route path="tips" element={<TipsPage />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+
         <Route element={<RequireAuth />}>
           <Route path="/complete-page" element={<CreatePageForm />} />
           <Route element={<RequireUserPage />}>

@@ -9,6 +9,8 @@ import {
   ServerError,
 } from "../../../errors/httpErrors";
 import client from "../../../db";
+import moment from "moment";
+import { paginate } from "../../../utils/expressHelpers";
 
 class TipController {
   async createTip(req: Request, res: Response) {
@@ -85,6 +87,74 @@ class TipController {
     }
 
     res.ok({ paymentLink });
+  }
+
+  async getTipSummary(req: Request, res: Response) {
+    const { user } = req;
+
+    // I'm assuming that the user cannot change their tip currency
+    const allTimeEarnings = await client.tip.aggregate({
+      _sum: { amount: true },
+      where: { userId: user!.id },
+    });
+
+    const tipCount = await client.tip.count({
+      where: { userId: user!.id },
+    });
+
+    const last30DaysEarnings = await client.tip.aggregate({
+      _sum: { amount: true },
+      where: {
+        userId: user!.id,
+        createdAt: {
+          lte: moment().toDate(),
+          gt: moment().subtract(30, "days").toDate(),
+        },
+      },
+    });
+
+    const last90DaysEarnings = await client.tip.aggregate({
+      _sum: { amount: true },
+      where: {
+        userId: user!.id,
+        createdAt: {
+          lte: moment().toDate(),
+          gt: moment().subtract(90, "days").toDate(),
+        },
+      },
+    });
+
+    const earningsSummary = {
+      allTime: allTimeEarnings._sum.amount,
+      last30Days: last30DaysEarnings._sum.amount,
+      last90Days: last90DaysEarnings._sum.amount,
+    };
+
+    res.ok({ earningsSummary, tipCount });
+  }
+
+  async getTips(req: Request, res: Response) {
+    let { query } = req;
+
+    const user = req.user!;
+
+    // todo: Use a cursor
+    const {
+      limit: take,
+      offset: skip,
+      page,
+    } = paginate(query.page, query.perPage);
+
+    const tips = await client.tip.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take,
+      skip,
+      include: { currency: true },
+    });
+
+    // todo: add next, previous
+    res.ok({ tips }, { page });
   }
 }
 

@@ -13,6 +13,7 @@ class MeController {
     const user = await client.user.findFirst({
       where: { id },
       select: {
+        page: true,
         id: true,
         email: true,
         firstName: true,

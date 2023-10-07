@@ -4,6 +4,7 @@ import meController from "../controllers/me.controller";
 import { auth } from "../../middlewares/authMiddleware";
 import uploadMiddleware from "../../../config/multer.config";
 import pageController from "../controllers/page.controller";
+import tipController from "../controllers/tip.controller";
 
 const meRouter = express.Router();
 
@@ -32,5 +33,7 @@ meRouter.patch(
 );
 
 meRouter.put("/page/status", auth, pageController.updatePageStatus);
+meRouter.get("/tips", auth, tipController.getTips);
+meRouter.get("/tips/summary", auth, tipController.getTipSummary);
 
 export default meRouter;

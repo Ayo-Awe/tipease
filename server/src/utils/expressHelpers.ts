@@ -24,7 +24,7 @@ export function conditionalMiddleware(
 }
 
 export function paginate(
-  cursor: any,
+  page: any,
   perPage: any,
   maxPerPage: number = 100,
   defaultPerPage: number = 30
@@ -37,7 +37,7 @@ export function paginate(
     throw new Error("Default per page must be greater than 0");
   }
 
-  let page = parseCursor(cursor) || 1;
+  let parsedPage = parsePage(page) || 1;
   let parsedPerPage = Number(perPage);
 
   if (isNaN(parsedPerPage) || parsedPerPage <= 0) {
@@ -48,20 +48,32 @@ export function paginate(
     parsedPerPage = maxPerPage;
   }
 
-  const offset = (page - 1) * parsedPerPage;
+  const offset = (parsedPage - 1) * parsedPerPage;
   const limit = parsedPerPage;
 
-  return { offset, limit, page };
+  return { offset, limit, page: parsedPage };
 }
 
-export function createCursor(page: number) {
-  return btoa(`page:${page}`);
-}
+// export function createCursor(page: number) {
+//   return btoa(`page:${page}`);
+// }
 
-export function parseCursor(cursor: string) {
-  const decoded = atob(cursor);
+// export function parseCursor(cursor: string) {
+//   const decoded = atob(cursor);
 
-  const page = decoded.split(":")[1];
+//   const page = decoded.split(":")[1];
+
+//   if (isNaN(parseInt(page))) {
+//     return null;
+//   }
+
+//   return parseInt(page);
+// }
+
+export function parsePage(page: any) {
+  if (typeof page !== "string" || typeof page !== "number") {
+    return null;
+  }
 
   if (isNaN(parseInt(page))) {
     return null;

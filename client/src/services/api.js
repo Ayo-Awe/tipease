@@ -77,3 +77,13 @@ export async function createTip(slug, payload) {
   const { data } = await client.post(`/pages/${slug}/tips`, payload);
   return data.data.paymentLink;
 }
+
+export async function getTipSummary() {
+  const { data } = await client.get(`/me/tips/summary`);
+  return data.data;
+}
+
+export async function getTips() {
+  const { data } = await client.get(`/me/tips`);
+  return data.data.tips;
+}
